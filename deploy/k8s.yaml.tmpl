@@ -1,0 +1,116 @@
+# Deployment
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: ${K8S_NAMESPACE}
+  labels:
+    app: ${PROJECT}
+    env: ${ENV}
+    process: worker
+    product: ${K8S_NAMESPACE}
+    deploy: ${PROJECT}
+    release: ${VERSION}
+  name: ${PROJECT}
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        deploy: ${PROJECT}
+    spec:
+      containers:
+      - name: ${PROJECT}-container
+        image: ${IMAGE_NAME}
+        env:
+        - name: ZK_HOSTS
+          value: ${ZK_HOSTS}
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          initialDelaySeconds: 300
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+            httpHeaders:
+              - name: Host
+                value: localhost
+        readinessProbe:
+          initialDelaySeconds: 300
+          periodSeconds: 15
+          successThreshold: 1
+          timeoutSeconds: 5
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+            httpHeaders:
+              - name: Host
+                value: localhost
+        ports:
+        - containerPort: 9000
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 800Mi
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${PROJECT}-service
+  namespace: ${K8S_NAMESPACE}
+  labels:
+      app: ${PROJECT}
+      env: ${ENV}
+      process: worker
+      product: ${K8S_NAMESPACE}
+      deploy: ${PROJECT}
+      release: ${VERSION}
+spec:
+  ports:
+  - port: 9000
+    protocol: TCP
+    targetPort: 9000
+  selector:
+    deploy: ${PROJECT}
+  type: ClusterIP
+---
+# Ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ${PROJECT}-ingress
+  namespace: ${K8S_NAMESPACE}
+  annotations:
+    kubernetes.io/ingress.class: private
+    kubernetes.io/tls-acme: "false"
+  labels:
+    app: ${PROJECT}
+    env: ${ENV}
+    process: worker
+    product: ${K8S_NAMESPACE}
+    deploy: ${PROJECT}
+    release: ${VERSION}
+spec:
+  rules:
+  - host: ${PROJECT}.private.${ENV}.vivareal.io
+    http:
+      paths:
+      - backend:
+          serviceName: ${PROJECT}-service
+          servicePort: 9000
+        path: /
