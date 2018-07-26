@@ -1,8 +1,8 @@
 # Kafka manager
 
-Tool (https://github.com/yahoo/kafka-manager) to monitor and manager kafka brokers, topics, consumers etc.
+Tool (https://github.com/yahoo/kafka-manager) to monitor and manage kafka brokers, topics, consumers etc.
 
-The Dockerfile was inspired by https://github.com/sheepkiller/kafka-manager-docker. The entrypoint was stole from it :)
+The Dockerfile was inspired by https://github.com/sheepkiller/kafka-manager-docker. The entrypoint was stolen from it :)
 
 # Setup
 

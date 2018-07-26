@@ -1,4 +1,4 @@
-FROM vivareal/base-images:alpine-3.7-java-8-jdk
+FROM vivareal/base-images:alpine-3.8-java-8-jdk
 
 ARG KM_VERSION
 

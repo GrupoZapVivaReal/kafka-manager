@@ -1,5 +1,5 @@
 
-KM_VERSION?=1.3.3.17
+KM_VERSION?=1.3.3.18
 
 ORG?=vivareal
 PROJECT?=kafka-manager
