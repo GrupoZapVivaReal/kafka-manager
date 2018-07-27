@@ -14,7 +14,7 @@ RUN mkdir -p /tmp && cd /tmp && \
     wget https://github.com/yahoo/kafka-manager/archive/${KM_VERSION}.tar.gz && \
     tar -xvzf ${KM_VERSION}.tar.gz && \
     cd kafka-manager-${KM_VERSION} && \
-    ./sbt clean dist && \
+    until ./sbt dist; do echo "Retrying..."; done && \
     unzip  -d / ./target/universal/kafka-manager-${KM_VERSION}.zip && \
     rm -fr /tmp/* /root/.sbt /root/.ivy2 && \
     chmod +x /kafka-manager-${KM_VERSION}/start-kafka-manager.sh
