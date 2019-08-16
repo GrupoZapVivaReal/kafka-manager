@@ -1,5 +1,5 @@
 # Deployment
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: ${K8S_NAMESPACE}
@@ -18,10 +18,19 @@ spec:
       maxSurge: 1
       maxUnavailable: 0
     type: RollingUpdate
+  selector:
+    matchLabels:
+      app: ${PROJECT}
+      env: ${ENV}
+      process: worker
+      product: ${K8S_NAMESPACE}
   template:
     metadata:
       labels:
-        deploy: ${PROJECT}
+        app: ${PROJECT}
+        env: ${ENV}
+        process: worker
+        product: ${K8S_NAMESPACE}
     spec:
       containers:
       - name: ${PROJECT}-container
