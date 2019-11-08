@@ -95,7 +95,7 @@ spec:
     protocol: TCP
     targetPort: 9000
   selector:
-    deploy: ${PROJECT}
+    app: ${PROJECT}
   type: ClusterIP
 ---
 # Ingress
@@ -106,7 +106,7 @@ metadata:
   namespace: ${K8S_NAMESPACE}
   annotations:
     kubernetes.io/ingress.class: private
-    kubernetes.io/tls-acme: "false"
+    kubernetes.io/tls-acme: "true"
   labels:
     app: ${PROJECT}
     env: ${ENV}
@@ -123,3 +123,7 @@ spec:
           serviceName: ${PROJECT}-service
           servicePort: 9000
         path: /
+  tls:
+  - hosts:
+    - ${PROJECT}.private.${ENV}.vivareal.io
+    secretName: ${PROJECT}-tls
