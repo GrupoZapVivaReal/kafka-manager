@@ -1,25 +1,19 @@
-FROM vivareal/base-images:alpine-3.8-java-8-jdk
+FROM debian:latest as build
 
-ARG KM_VERSION
+ARG CMAK_VERSION=3.0.0.4
 
-ENV JAVA_HOME=/usr/java/default/ \
-    ZK_HOSTS=localhost:2181 \
-    KM_CONFIGFILE="conf/application.conf"
+WORKDIR /opt/build
 
-ADD start-kafka-manager.sh /kafka-manager-${KM_VERSION}/start-kafka-manager.sh
+RUN apt-get update && apt-get install -y wget unzip && wget https://github.com/yahoo/CMAK/releases/download/$CMAK_VERSION/cmak-$CMAK_VERSION.zip && unzip cmak-$CMAK_VERSION.zip && mv /opt/build/cmak-$CMAK_VERSION /opt/cmak
 
-RUN apk add --no-cache --update wget unzip
+FROM openjdk:11-jdk-slim
 
-RUN mkdir -p /tmp && cd /tmp && \
-    wget https://github.com/yahoo/kafka-manager/archive/${KM_VERSION}.tar.gz && \
-    tar -xvzf ${KM_VERSION}.tar.gz && \
-    cd kafka-manager-${KM_VERSION} && \
-    until ./sbt dist; do echo "Retrying..."; done && \
-    unzip  -d / ./target/universal/kafka-manager-${KM_VERSION}.zip && \
-    rm -fr /tmp/* /root/.sbt /root/.ivy2 && \
-    chmod +x /kafka-manager-${KM_VERSION}/start-kafka-manager.sh
+WORKDIR /opt/cmak
 
-WORKDIR /kafka-manager-${KM_VERSION}
+VOLUME /tmp
+
+COPY --from=build /opt/cmak/ /opt/cmak/
 
 EXPOSE 9000
-ENTRYPOINT ["./start-kafka-manager.sh"]
+
+ENTRYPOINT ["./bin/cmak"]
